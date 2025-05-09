@@ -1,3 +1,9 @@
+# ⚡️ Quick Start: Static Demo (Recommended)
+
+> **If you do not need real-time data updates, simply open the `Phase2.html` file directly in your browser.**
+> 
+> **This is the recommended way for static demo or quick testing!**
+
 # Death Star Management System Dashboard Local Setup Guide
 
 ## Directory Structure
@@ -85,6 +91,10 @@ http://localhost:8080/Phase2.html
 ## Additional Notes
 - You can modify `gauge-server.js` to push real business data.
 - Gauge styles and thresholds can be customized in Phase2.html.
+
+## Note: Open HTML Directly for Static Demo
+
+If you do not need real-time data updates, you can simply open the `Phase2.html` file directly in your browser (recommended for static demo/testing purposes).
 
 ---
 
