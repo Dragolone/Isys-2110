@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}Planet List{% endblock %}
+
+{% block content %}
+<style>
+.planet-section {
+  max-width: 900px;
+  margin: 2.5rem auto 0 auto;
+  background: var(--bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+}
+.planet-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+.planet-add-btn {
+  background: var(--accent-color);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1.1em;
+  font-weight: bold;
+  border: none;
+  margin-bottom: 1.5rem;
+  transition: background 0.2s;
+  cursor: pointer;
+  display: inline-block;
+}
+.planet-add-btn:hover {
+  background: #005fa3;
+}
+.planet-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin-bottom: 0.5rem;
+}
+.planet-table th {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  font-weight: 600;
+  padding: 12px 8px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  font-size: 1.1em;
+}
+.planet-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 10px 8px;
+  border-radius: 0 0 8px 8px;
+  border: none;
+  vertical-align: middle;
+  font-size: 1.05em;
+  text-align: center;
+}
+.planet-table tr {
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.planet-table tr:hover td {
+  background: var(--bg-tertiary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.planet-action-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.planet-action-btn.edit {
+  background: var(--success-color);
+  color: #fff;
+}
+.planet-action-btn.edit:hover {
+  background: #218838;
+}
+.planet-action-btn.delete {
+  background: var(--error-color);
+  color: #fff;
+}
+.planet-action-btn.delete:hover {
+  background: #a71d2a;
+}
+#planetModal .modal-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  margin: 6% auto;
+  padding: 2.2rem 2rem 1.5rem 2rem;
+  width: 420px;
+  position: relative;
+}
+#planetModal h3 {
+  margin-bottom: 1.2rem;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+}
+#planetForm label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: var(--text-primary);
+}
+#planetForm input, #planetForm select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1.1rem;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 1em;
+  transition: border 0.2s;
+}
+#planetForm input:focus, #planetForm select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+#planetForm .modal-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+#planetForm .modal-btn {
+  padding: 8px 22px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+#planetForm .modal-btn.save {
+  background: var(--success-color);
+  color: #fff;
+}
+#planetForm .modal-btn.save:hover {
+  background: #218838;
+}
+#planetForm .modal-btn.cancel {
+  background: var(--error-color);
+  color: #fff;
+}
+#planetForm .modal-btn.cancel:hover {
+  background: #a71d2a;
+}
+#planetModal .close-x {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+#planetModal .close-x:hover { color: var(--error-color); }
+</style>
+<div class="planet-section">
+  <div class="planet-title">Planet List</div>
+  <a class="planet-add-btn" href="#" onclick="openNewPlanetModal();return false;">Add New Planet</a>
+  <table class="planet-table">
+    <tr>
+      <th>ID</th><th>Name</th><th>Coordinates(X,Y)</th><th>Rebel score</th><th>Threat</th><th>Status</th><th>Action</th>
+    </tr>
+    {% for p in planets %}
+    <tr>
+      <td>{{ p.planet_id }}</td>
+      <td>{{ p.name }}</td>
+      <td>({{ p.coord_x }}, {{ p.coord_y }})</td>
+      <td>{{ p.rebel_score }}</td>
+      <td>{{ p.threat }}</td>
+      <td>{{ p.status }}</td>
+      <td>
+        <a href="#" class="planet-action-btn edit" onclick="openEditPlanetModal('{{ p.planet_id }}', '{{ p.name|escape }}', {{ p.coord_x }}, {{ p.coord_y }}, {{ p.rebel_score }}, '{{ p.threat }}', '{{ p.status }}');return false;">Edit</a>
+        <a href="{{ url_for('delete_planet', pid=p.planet_id) }}" class="planet-action-btn delete" onclick="return confirm('Delete {{ p.name }}?')">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+<!-- Add Planet Modal -->
+<div id="planetModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999;">
+  <div class="modal-content">
+    <button class="close-x" onclick="closePlanetModal()">&times;</button>
+    <form id="planetForm" method="POST" action="/planet/new" style="display:flex; flex-direction:column; gap:0; color:inherit;">
+      <h3>Add New Planet</h3>
+      <label for="planet_id">ID:</label>
+      <input type="text" id="planet_id" name="planet_id" required>
+      <label for="name">Name:</label>
+      <input type="text" id="name" name="name" required>
+      <label for="x">X:</label>
+      <input type="number" id="x" name="x" min="0" required>
+      <label for="y">Y:</label>
+      <input type="number" id="y" name="y" min="0" required>
+      <label for="rebel_score">Rebel Score:</label>
+      <input type="number" id="rebel_score" name="rebel_score" min="0" max="10" required>
+      <label for="threat">Threat:</label>
+      <select id="threat" name="threat" required>
+        <option value="">-- Select --</option>
+        <option value="LOW">LOW</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="HIGH">HIGH</option>
+        <option value="BASE">BASE</option>
+      </select>
+      <label for="status">Status:</label>
+      <select id="status" name="status" required>
+        <option value="">-- Select --</option>
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="DORMANT">DORMANT</option>
+        <option value="HIGH_RISK">HIGH_RISK</option>
+        <option value="default">default</option>
+      </select>
+      <div class="modal-btns">
+        <button type="submit" class="modal-btn save">Save</button>
+        <button type="button" class="modal-btn cancel" onclick="closePlanetModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+<script>
+function openNewPlanetModal() {
+  document.getElementById("planetForm").reset();
+  document.getElementById("planetForm").action = "/planet/new";
+  document.querySelector('#planetModal h3').innerText = 'Add New Planet';
+  document.getElementById("planet_id").readOnly = false;
+  document.getElementById("planetModal").style.display = "block";
+}
+function openEditPlanetModal(id, name, x, y, rebel_score, threat, status) {
+  document.getElementById("planetForm").reset();
+  document.getElementById("planetForm").action = "/planet/edit/" + id;
+  document.querySelector('#planetModal h3').innerText = 'Edit Planet';
+  document.getElementById("planet_id").value = id;
+  document.getElementById("planet_id").readOnly = true;
+  document.getElementById("name").value = name;
+  document.getElementById("x").value = x;
+  document.getElementById("y").value = y;
+  document.getElementById("rebel_score").value = rebel_score;
+  document.getElementById("threat").value = threat;
+  document.getElementById("status").value = status;
+  document.getElementById("planetModal").style.display = "block";
+}
+function closePlanetModal() {
+  document.getElementById("planetModal").style.display = "none";
+}
+</script>
+{% endblock %}

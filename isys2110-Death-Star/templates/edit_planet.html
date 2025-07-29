@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Edit Planet{% endblock %}
+{% block content %}
+<h2>Edit Planet: {{ planet.name }}</h2>
+<form method="POST">
+  Name: <input name="name" value="{{ planet.name }}"><br>
+  X: <input name="x" value="{{ planet.coord_x }}"><br>
+  Y: <input name="y" value="{{ planet.coord_y }}"><br>
+  Rebel score: <input name="rebel_score" value="{{ planet.rebel_score }}"><br>
+  Threat:
+  <select name="threat">
+    {% for t in ["LOW", "MEDIUM", "HIGH"] %}
+    <option value="{{ t }}" {% if t == planet.threat %}selected{% endif %}>{{ t }}</option>
+    {% endfor %}
+  </select><br>
+  Status:
+  <select name="status">
+    {% for s in ["ACTIVE", "DORMANT", "HIGH_RISK"] %}
+    <option value="{{ s }}" {% if s == planet.status %}selected{% endif %}>{{ s }}</option>
+    {% endfor %}
+  </select><br><br>
+  <button type="submit" class="btn">Save</button>
+</form>
+{% endblock %}

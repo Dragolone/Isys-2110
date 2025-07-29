@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Resources{% endblock %}
+
+{% block content %}
+<style>
+.resource-section {
+  max-width: 900px;
+  margin: 2.5rem auto 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+.resource-card {
+  background: var(--bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  padding: 2rem 2.2rem 1.5rem 2.2rem;
+}
+.resource-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+.resource-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin-bottom: 0.5rem;
+}
+.resource-table th {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  font-weight: 600;
+  padding: 12px 8px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  font-size: 1.1em;
+}
+.resource-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 10px 8px;
+  border-radius: 0 0 8px 8px;
+  border: none;
+  vertical-align: middle;
+  font-size: 1.05em;
+  text-align: center;
+}
+.resource-table tr {
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.resource-table tr:hover td {
+  background: var(--bg-tertiary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.resource-chart-card {
+  background: var(--bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  padding: 2rem 2.2rem 1.5rem 2.2rem;
+}
+#usageChart {
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  margin-top: 1.2rem;
+  padding: 1rem;
+}
+</style>
+<div class="resource-section">
+  <div class="resource-card">
+    <div class="resource-title">Resource Overview</div>
+    <table class="resource-table">
+      <tr>
+        <th>Type</th>
+        <th>Available</th>
+        <th>Threshold</th>
+      </tr>
+      {% for r in resources %}
+      <tr>
+        <td>{{ r.type }}</td>
+        <td>{{ r.available }}</td>
+        <td>{{ r.threshold }}</td>
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div class="resource-chart-card">
+    <div class="resource-title">Resource Usage (Daily)</div>
+    <canvas id="usageChart" width="800" height="400"></canvas>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  const usageData = {{ usage_log | tojson }};
+  const labels = usageData.map(row => row.date);
+  const energy = usageData.map(row => row.ENERGY || 0);
+  const droids = usageData.map(row => row.DROIDS || 0);
+  const FACILITIES = usageData.map(row => row.FACILITIES || 0);
+  const ctx = document.getElementById("usageChart").getContext("2d");
+  const usageChart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: "ENERGY",
+          data: energy,
+          backgroundColor: "#42a5f5"
+        },
+        {
+          label: "DROIDS",
+          data: droids,
+          backgroundColor: "#ab47bc"
+        },
+        {
+          label: "FACILITIES",
+          data: FACILITIES,
+          backgroundColor: "#66bb6a"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color: '#fff', font: { size: 15 } } },
+        title: {
+          display: false
+        }
+      },
+      scales: {
+        x: { stacked: true, ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+        y: { stacked: true, ticks: { color: '#fff' }, grid: { color: 'rgba(255,255,255,0.08)' } }
+      }
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<h2 class="settings-title">System Settings</h2>
+
+<div class="settings-card">
+  <p class="settings-desc">
+      This reset function is provided to help restart the system from a clean state.<br>
+      When you click the <strong>Reset</strong> button below:
+  </p>
+  <ul class="settings-list">
+      <li>All current <strong>missions</strong>, <strong>planets</strong>, <strong>resources</strong>, <strong>alerts</strong>, and <strong>resource logs</strong> will be permanently deleted.</li>
+      <li>Default test data will be reloaded into the system, including predefined planets and resource types, simulated alerts and usage logs.</li>
+      <li><strong>Missions will be regenerated based on the current date and time</strong>, so some missions may automatically appear as active or completed depending on when you reset.</li>
+  </ul>
+  <p class="settings-desc">
+      This operation is useful for testing or resetting your environment, but <strong>it cannot be undone</strong>.
+  </p>
+  <form action="{{ url_for('reset_system') }}" method="post" onsubmit="return confirm('Are you sure you want to reset the system?');">
+      <button type="submit" class="btn-reset"><i class="fa-solid fa-trash"></i> Reset System - Delete All Data</button>
+  </form>
+</div>
+
+<h2 class="settings-title">Resource Override</h2>
+<div class="settings-card">
+  <p class="settings-desc">
+      This section allows directly modify resource values for rapid testing.<br>
+      You can simulate resource shortages, trigger alerts without having to run multiple missions.
+  </p>
+  <form action="{{ url_for('update_resources') }}" method="post">
+      <table class="settings-table">
+          <thead>
+          <tr>
+              <th>Type</th>
+              <th>Available</th>
+              <th>Threshold</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for r in resources %}
+          <tr>
+              <td>{{ r.resource_type }}</td>
+              <td>
+                  <input type="number" name="available_{{ r.resource_type }}" value="{{ r.available }}" min="0" step="1" required class="input-num">
+              </td>
+              <td>
+                  <input type="number" name="threshold_{{ r.resource_type }}" value="{{ r.threshold }}" min="0" step="1" required class="input-num">
+              </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+      </table>
+      <br>
+      <button type="submit" class="btn-save">💾 Save Resource Changes</button>
+  </form>
+</div>
+
+<style>
+.settings-title {
+  text-align: center;
+  color: #00eaff;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 8px #00eaff99;
+  margin: 32px 0 18px 0;
+  font-size: 2rem;
+}
+.settings-card {
+  background: rgba(18,24,38,0.97);
+  border-radius: 16px;
+  box-shadow: 0 2px 18px #0007, 0 0 0 2px #00eaff33;
+  padding: 32px 32px 24px 32px;
+  max-width: 700px;
+  margin: 0 auto 32px auto;
+  border: 1.5px solid #00eaff22;
+}
+.settings-desc {
+  color: #eaf6fb;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  margin-bottom: 12px;
+}
+.settings-list {
+  color: #b8e6ff;
+  margin-bottom: 12px;
+  padding-left: 22px;
+  line-height: 1.6;
+}
+.btn-reset {
+  background: linear-gradient(90deg, #ff3c3c 60%, #ffb199 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.08rem;
+  padding: 10px 28px;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px #ff3c3c44;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-reset:hover {
+  background: linear-gradient(90deg, #ff5c5c 60%, #ffd6c0 100%);
+  box-shadow: 0 4px 16px #ff3c3c77;
+}
+.btn-save {
+  background: linear-gradient(90deg, #00eaff 60%, #00bfff 100%);
+  color: #222;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.08rem;
+  padding: 10px 28px;
+  margin-top: 10px;
+  box-shadow: 0 2px 8px #00eaff44;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-save:hover {
+  background: linear-gradient(90deg, #00bfff 60%, #00eaff 100%);
+  box-shadow: 0 4px 16px #00eaff77;
+}
+.settings-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #181e2a;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px #00eaff22;
+}
+.settings-table th, .settings-table td {
+  padding: 12px 10px;
+  text-align: center;
+}
+.settings-table th {
+  background: #10131a;
+  color: #00eaff;
+  font-weight: 600;
+  border-bottom: 2px solid #00eaff33;
+}
+.settings-table tr:nth-child(even) {
+  background: #1c2333;
+}
+.settings-table tr:nth-child(odd) {
+  background: #232b3d;
+}
+.settings-table tr:hover {
+  background: #223b4d;
+}
+.input-num {
+  width: 80px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1.5px solid #00eaff55;
+  background: #10131a;
+  color: #eaf6fb;
+  font-size: 1rem;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+.input-num:focus {
+  border: 1.5px solid #00eaff;
+  box-shadow: 0 0 8px #00eaff77;
+}
+</style>
+
+{% endblock %}

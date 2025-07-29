@@ -1,0 +1,17 @@
+[
+  {
+    "type": "ENERGY",
+    "available": 4970,
+    "threshold": 2000
+  },
+  {
+    "type": "DROIDS",
+    "available": 800,
+    "threshold": 400
+  },
+  {
+    "type": "FACILITIES",
+    "available": 1500,
+    "threshold": 500
+  }
+]

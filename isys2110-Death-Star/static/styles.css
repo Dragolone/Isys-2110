@@ -1,0 +1,46 @@
+:root{
+    --accent:#007ACC;
+    --bg-dark:#1a1a1a;
+    --text:#fff;
+    --sidebar:#2d2d2d;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:Arial, sans-serif;}
+
+body{
+    background:var(--bg-dark);
+    color:var(--text);
+    min-height:100vh;
+}
+
+.top-bar{
+    background:#122;
+    height:60px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 20px;
+}
+.topbar-title{font-weight:bold;letter-spacing:2px;}
+.btn{background:var(--accent);color:#fff;padding:6px 14px;text-decoration:none;border-radius:4px;}
+.sidebar{
+    width:200px;
+    position:fixed;
+    top:60px;bottom:0;
+    background:var(--sidebar);
+    padding:10px;
+}
+.nav-link{display:block;color:#fff;padding:8px;text-decoration:none;border-radius:4px}
+.nav-link:hover{background:rgba(255,255,255,.1)}
+.main-content {
+    position: relative;
+    margin: 0;
+    padding: 0 20px;
+    padding-top: 20px;
+    margin-left: 200px;
+}
+
+.flash{margin-bottom:8px;padding:6px 10px;border-radius:4px;}
+.flash.success{background:#28a745}.flash.warning{background:#ffc107}
+.flash.danger{background:#dc3545}.flash.info{background:#17a2b8}
+.login-form input{margin:4px 0;padding:4px 8px;border:1px solid #555;border-radius:4px}

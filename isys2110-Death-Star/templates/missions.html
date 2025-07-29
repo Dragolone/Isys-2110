@@ -1,0 +1,372 @@
+{% extends "base.html" %}
+{% block title %}Missions{% endblock %}
+
+{% block content %}
+<style>
+.mission-stats {
+  display: flex;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+.mission-stat-card {
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+  padding: 1.5rem 2.5rem;
+  min-width: 180px;
+  text-align: center;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.mission-stat-card .stat-label {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-top: 0.5rem;
+}
+.mission-section-title {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin: 2.5rem 0 1rem 0;
+  border-left: 5px solid var(--accent-color);
+  padding-left: 0.7rem;
+  letter-spacing: 1px;
+}
+.mission-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin-bottom: 2rem;
+}
+.mission-table th {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 12px 8px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+}
+.mission-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 10px 8px;
+  border-radius: 0 0 8px 8px;
+  border: none;
+  vertical-align: middle;
+}
+.mission-table tr {
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.mission-table tr:hover td {
+  background: var(--bg-tertiary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.mission-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 4px;
+  transition: background 0.2s, color 0.2s;
+}
+.mission-btn.edit {
+  background: var(--accent-color);
+  color: #fff;
+}
+.mission-btn.edit:hover {
+  background: #005fa3;
+}
+.mission-btn.delete {
+  background: var(--error-color);
+  color: #fff;
+}
+.mission-btn.delete:hover {
+  background: #a71d2a;
+}
+.add-mission-btn {
+  background: var(--success-color);
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  border: none;
+  transition: background 0.2s;
+}
+.add-mission-btn:hover {
+  background: #218838;
+}
+#editModal .modal-content {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border-radius: 16px;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  margin: 6% auto;
+  padding: 2.2rem 2rem 1.5rem 2rem;
+  width: 420px;
+  position: relative;
+}
+#editModal h3 {
+  margin-bottom: 1.2rem;
+  font-size: 1.4rem;
+  font-weight: bold;
+  text-align: center;
+}
+#editForm label {
+  font-weight: 500;
+  margin-bottom: 0.3rem;
+  color: var(--text-primary);
+}
+#editForm input, #editForm select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1.1rem;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 1em;
+  transition: border 0.2s;
+}
+#editForm input:focus, #editForm select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+#editForm .modal-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+#editForm .modal-btn {
+  padding: 8px 22px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+#editForm .modal-btn.save {
+  background: var(--success-color);
+  color: #fff;
+}
+#editForm .modal-btn.save:hover {
+  background: #218838;
+}
+#editForm .modal-btn.cancel {
+  background: var(--error-color);
+  color: #fff;
+}
+#editForm .modal-btn.cancel:hover {
+  background: #a71d2a;
+}
+#editModal .close-x {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  font-size: 1.5rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 2;
+  transition: color 0.2s;
+}
+#editModal .close-x:hover { color: var(--error-color); }
+</style>
+
+<button class="add-mission-btn" onclick="openNewModal()">Add New Mission</button>
+
+<div class="mission-stats">
+  <div class="mission-stat-card">
+    {{ total }}
+    <div class="stat-label">Total</div>
+  </div>
+  <div class="mission-stat-card">
+    {{ done }}
+    <div class="stat-label">Done</div>
+  </div>
+  <div class="mission-stat-card">
+    {{ in_progress }}
+    <div class="stat-label">In Progress</div>
+  </div>
+  <div class="mission-stat-card">
+    {{ unassigned }}
+    <div class="stat-label">Unassigned</div>
+  </div>
+</div>
+
+<div class="mission-section-title">Active & Planned Missions</div>
+<table class="mission-table">
+  <thead>
+    <tr>
+      <th>MID</th><th>Name</th><th>Description</th><th>Planet ID</th><th>Start</th><th>End</th><th>Status</th><th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in active_planned %}
+    <tr>
+      <td>{{ m.mission_id }}</td>
+      <td>{{ m.name }}</td>
+      <td>{{ m.description }}</td>
+      <td>{{ m.planet_id }}</td>
+      <td>{{ m.start_time }}</td>
+      <td>{{ m.end_time }}</td>
+      <td>{{ m.status }}</td>
+      <td>
+        <button class="mission-btn edit" onclick="openEditModal('{{ m.mission_id }}')">Edit</button>
+        <a href="{{ url_for('delete_mission', mid=m.mission_id) }}" class="mission-btn delete">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="mission-section-title">Draft Missions</div>
+<table class="mission-table">
+  <thead>
+    <tr>
+      <th>MID</th><th>Name</th><th>Description</th><th>Planet ID</th><th>Start</th><th>End</th><th>Status</th><th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in drafts %}
+    <tr>
+      <td>{{ m.mission_id }}</td>
+      <td>{{ m.name }}</td>
+      <td>{{ m.description }}</td>
+      <td>{{ m.planet_id }}</td>
+      <td>{{ m.start_time }}</td>
+      <td>{{ m.end_time }}</td>
+      <td>{{ m.status }}</td>
+      <td>
+        <button class="mission-btn edit" onclick="openEditModal('{{ m.mission_id }}')">Edit</button>
+        <a href="{{ url_for('delete_mission', mid=m.mission_id) }}" class="mission-btn delete">Delete</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="mission-section-title">Completed Missions</div>
+<table class="mission-table">
+  <thead>
+    <tr>
+      <th>MID</th><th>Name</th><th>Description</th><th>Planet ID</th><th>End Time</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for m in completed %}
+    <tr>
+      <td>{{ m.mission_id }}</td>
+      <td>{{ m.name }}</td>
+      <td>{{ m.description }}</td>
+      <td>{{ m.planet_id }}</td>
+      <td>{{ m.end_time }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Edit Modal -->
+<div id="editModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999;">
+    <div class="modal-content">
+        <button class="close-x" onclick="closeModal()">&times;</button>
+        <form id="editForm" method="POST" style="display:flex; flex-direction:column; gap:0; color:inherit;">
+            <h3 id="modalTitle">Edit Mission</h3>
+            <input type="hidden" name="mission_id" id="edit_id">
+
+            <label for="edit_name">Name:</label>
+            <input type="text" name="name" id="edit_name" required>
+
+            <label for="edit_description">Description:</label>
+            <input type="text" name="description" id="edit_description" required>
+
+            <label for="edit_start">Start Time:</label>
+            <input type="datetime-local" name="start_time" id="edit_start" required>
+
+            <label for="edit_end">End Time:</label>
+            <input type="datetime-local" name="end_time" id="edit_end" required>
+
+            <label for="edit_energy">ENERGY Used:</label>
+            <input type="number" name="energy" id="edit_energy" min="0" value="0">
+
+            <label for="edit_droids">DROIDS Used:</label>
+            <input type="number" name="droids" id="edit_droids" min="0" value="0">
+
+            <label for="edit_facilities">FACILITIES Used:</label>
+            <input type="number" name="facilities" id="edit_facilities" min="0" value="0">
+
+            <label for="edit_status">Status:</label>
+            <select name="status" id="edit_status" required>
+                <option value="draft">draft</option>
+                <option value="planned">planned</option>
+                <option value="cancelled">cancelled</option>
+                <option value="completed">completed</option>
+            </select>
+
+            <div class="modal-btns">
+                <button type="submit" class="modal-btn save">Save</button>
+                <button type="button" class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    function openEditModal(missionId) {
+        fetch("/api/missions")
+            .then(res => res.json())
+            .then(data => {
+                const m = data.find(item => item.mission_id === missionId);
+                if (!m) return;
+
+                document.getElementById("modalTitle").textContent = "Edit Mission";
+                document.getElementById("edit_id").value = m.mission_id;
+                document.getElementById("edit_name").value = m.name;
+                document.getElementById("edit_description").value = m.description;
+                document.getElementById("edit_start").value = m.start_time;
+                document.getElementById("edit_end").value = m.end_time;
+
+                const used = m.resources_used || {};
+                document.getElementById("edit_energy").value = used["ENERGY"] || 0;
+                document.getElementById("edit_droids").value = used["DROIDS"] || 0;
+                document.getElementById("edit_facilities").value = used["FACILITIES"] || 0;
+
+                document.getElementById("edit_status").value = m.status;
+
+                document.getElementById("editForm").action = `/mission/edit/${m.mission_id}`;
+                document.getElementById("editModal").style.display = "block";
+            });
+    }
+
+    function openNewModal() {
+        document.getElementById("modalTitle").textContent = "Add New Mission";
+        document.getElementById("edit_id").value = "";
+        document.getElementById("edit_name").value = "";
+        document.getElementById("edit_description").value = "";
+        document.getElementById("edit_start").value = "";
+        document.getElementById("edit_end").value = "";
+        document.getElementById("edit_energy").value = 0;
+        document.getElementById("edit_droids").value = 0;
+        document.getElementById("edit_facilities").value = 0;
+        document.getElementById("edit_status").value = "draft";
+        document.getElementById("editForm").action = "/mission/new";
+        document.getElementById("editModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+</script>
+
+{% endblock %}

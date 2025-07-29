@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Welcome to html's world!</title>
+  </head>
+
+  <body>
+    <p>Welcome to HTML5!</p>
+
+    <h1>Level 1 Heading</h1>
+
+    <p><a href="http://www.google.com">Google</a></p>
+
+    <!-- <h2>Level 2 Heading</h2>
+    <h3>Level 3 Heading</h3> -->
+
+    <p>
+      To write to <a href="mailto:deitel@deitel.com">
+        Deitel & Associates, Inc.</a>, click the link and your default
+      email client will open an email message and address it to us
+    </p>
+
+    <p>
+      <img src="cpphtp.png" width="92" height="120"
+        alt="C++ How to Program book cover">
+      <img src="jhtp.png" width="92" height="120"
+        alt="Java How to Program book cover" />
+    </p>
+
+    <p>
+      <a href="links.html">
+        <img src="buttons/links.jpg" width="65"
+          height="50" alt="Links">
+      </a>
+    </p>
+
+    <form method="post" action="http://www.deitel.com">
+      <!-- 隐藏字段 -->
+      <input type="hidden" name="recipient" value="deitel@deitel.com">
+      <input type="hidden" name="subject" value="Feedback form">
+      <input type="hidden" name="redirect" value="main.html">
+
+      <!-- 文本输入 -->
+      <p>
+        <label>Name:
+          <input name="name" type="text" size="25" maxlength="30">
+        </label>
+      </p>
+
+      <!-- 密码输入 -->
+      <p>
+        <label>Password:
+          <input name="password" type="password" size="25">
+        </label>
+      </p>
+
+      <!-- 多行评论框 -->
+      <p>
+        <label>Comments:<br>
+          <textarea name="comments" rows="4" cols="40">Enter comments here.</textarea>
+        </label>
+      </p>
+
+      <!-- 喜好复选框 -->
+      <p><strong>Things you liked:</strong><br>
+        <label><input type="checkbox" name="thingsliked" value="Design"> Site design</label><br>
+        <label><input type="checkbox" name="thingsliked" value="Links"> Links</label><br>
+        <label><input type="checkbox" name="thingsliked" value="Ease"> Ease of use</label><br>
+        <label><input type="checkbox" name="thingsliked" value="Images"> Images</label><br>
+        <label><input type="checkbox" name="thingsliked" value="Code"> Source code</label>
+      </p>
+
+      <!-- 来源单选框 -->
+      <p><strong>How did you get to our site?:</strong><br>
+        <label><input type="radio" name="howsite" value="search engine" checked> Search engine</label><br>
+        <label><input type="radio" name="howsite" value="link"> Links from another site</label><br>
+        <label><input type="radio" name="howsite" value="deitel.com"> Deitel.com Web site</label><br>
+        <label><input type="radio" name="howsite" value="book"> Reference in a book</label><br>
+        <label><input type="radio" name="howsite" value="other"> Other</label>
+      </p>
+
+      <!-- 评分下拉框 -->
+      <p>
+        <label>Rate our site:
+          <select name="rating">
+            <option selected>Amazing</option>
+            <option>10</option>
+            <option>9</option>
+            <option>8</option>
+            <option>7</option>
+            <option>6</option>
+            <option>5</option>
+            <option>4</option>
+            <option>3</option>
+            <option>2</option>
+            <option>1</option>
+            <option>Awful</option>
+          </select>
+        </label>
+      </p>
+
+      <!-- 提交/清除按钮 -->
+      <p>
+        <input type="submit" value="Submit">
+        <input type="reset" value="Clear">
+      </p>
+    </form>
+  </body>
+</html>

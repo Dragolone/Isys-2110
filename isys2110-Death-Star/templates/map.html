@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{% block title %}Planet Map{% endblock %}
+
+{% block content %}
+<h2 style="text-align:center; letter-spacing:2px; color:#00eaff; text-shadow:0 0 8px #00eaff99; margin-bottom: 24px;">Planetary Target Map</h2>
+<div class="star-map-container">
+  <div id="map"></div>
+  <div class="star-map-legend">
+    <div class="legend-title">Legend</div>
+    <div class="legend-divider"></div>
+    <div class="legend-item"><span class="legend-dot" style="background:purple;"></span>Purple = Imperial Base</div>
+    <div class="legend-item"><span class="legend-dot" style="background:red;"></span>Red = HIGH threat</div>
+    <div class="legend-item"><span class="legend-dot" style="background:orange;"></span>Orange = MEDIUM threat</div>
+    <div class="legend-item"><span class="legend-dot" style="background:limegreen;"></span>Green = LOW threat</div>
+    <div class="legend-item"><span class="legend-circle"></span>Circle = Rebel area</div>
+    <div class="legend-item"><span class="legend-line" style="border-top:3px dashed #888;"></span>Gray dashed = Planned mission</div>
+    <div class="legend-item"><span class="legend-line" style="border-top:3px solid #f00;"></span>Red solid = Active mission</div>
+    <div class="legend-item"><span class="legend-line" style="border-top:3px solid #4caf50;"></span>Green solid = Completed mission</div>
+    <div class="legend-item"><span class="legend-line" style="border-top:3px solid #000;"></span>Black solid = Cancelled mission</div>
+    <div class="legend-item"><span class="legend-line" style="border-top:3px solid #2196f3;"></span>Blue solid = Draft mission</div>
+  </div>
+</div>
+
+<style>
+.star-map-container {
+  position: relative;
+  width: 90vw;
+  max-width: 1300px;
+  height: 48vw;
+  max-height: 750px;
+  min-height: 400px;
+  margin: 0 auto 32px auto;
+  background: #10131a;
+  border-radius: 18px;
+  box-shadow: 0 6px 32px #000a, 0 0 0 2px #00eaff33;
+  overflow: hidden;
+}
+#map {
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  box-shadow: 0 0 24px #00eaff33 inset;
+}
+.star-map-legend {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  min-width: 210px;
+  background: rgba(18,24,38,0.92);
+  border: 1.5px solid #00eaff55;
+  border-radius: 14px;
+  box-shadow: 0 2px 16px #0008;
+  padding: 18px 20px 14px 20px;
+  color: #eaf6fb;
+  font-family: 'Roboto', 'Arial', sans-serif;
+  font-size: 15px;
+  z-index: 2000;
+  user-select: none;
+}
+.legend-title {
+  font-size: 17px;
+  font-weight: bold;
+  color: #00eaff;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  text-shadow: 0 0 6px #00eaff77;
+}
+.legend-divider {
+  border-bottom: 1px solid #00eaff33;
+  margin-bottom: 10px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 7px;
+  gap: 10px;
+}
+.legend-dot {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  margin-right: 2px;
+  box-shadow: 0 0 6px #fff8;
+  border: 2px solid #222;
+}
+.legend-circle {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: rgba(255,0,0,0.18);
+  border: 2px solid #d22;
+  margin-right: 2px;
+}
+.legend-line {
+  display: inline-block;
+  width: 22px;
+  height: 0;
+  border-top: 3px dashed #aaa;
+  margin-right: 2px;
+}
+.legend-anim {
+  display: inline-block;
+  width: 22px;
+  height: 6px;
+  background: linear-gradient(90deg, #f00 60%, #fff0 100%);
+  border-radius: 3px;
+  box-shadow: 0 0 8px #f00a;
+  margin-right: 2px;
+}
+@media (max-width: 900px) {
+  .star-map-container { max-width: 98vw; height: 60vw; min-height: 320px; }
+  .star-map-legend { right: 8px; top: 8px; padding: 12px 10px; font-size: 13px; }
+}
+</style>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    const map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: -2
+    });
+
+    const imageWidth = 1920;
+    const imageHeight = 1080;
+    const bounds = [[0, 0], [imageHeight, imageWidth]];
+
+    L.imageOverlay("{{ url_for('static', filename='starmap.png') }}", bounds).addTo(map);
+    map.fitBounds(bounds);
+
+    function getColor(threat) {
+        switch (threat) {
+            case "HIGH": return "red";
+            case "MEDIUM": return "orange";
+            case "LOW": return "green";
+            case "BASE": return "purple";
+            default: return "gray";
+        }
+    }
+
+    Promise.all([
+        fetch("/api/planets").then(r => r.json()),
+        fetch("/api/missions").then(r => r.json())
+    ]).then(([planets, missions]) => {
+        const planetMap = {};
+        let base = null;
+
+        planets.forEach(p => {
+            planetMap[p.planet_id] = p;
+            if (p.planet_id === "0") base = p;
+
+            const marker = L.circleMarker([p.y, p.x], {
+                radius: 20,
+                color: getColor(p.threat),
+                fillOpacity: 0.85
+            }).addTo(map);
+
+            const relatedMissions = missions.filter(m =>
+                m.planet_id === p.planet_id && (m.status === "active" || m.status === "planned")
+            );
+            let missionText = relatedMissions.map(m =>
+                `<li><b>${m.name}</b> ${m.status}</li>`
+            ).join("");
+            missionText = missionText ? `<ul>${missionText}</ul>` : "No mission";
+
+            marker.bindPopup(`<strong>${p.name}</strong> - ID ${p.planet_id}<br>Status: ${p.status}<br>Threat: ${p.threat}<br><br>${missionText}`);
+
+            if (p.rebel_score && parseFloat(p.rebel_score) > 0) {
+                L.circle([p.y, p.x], {
+                    radius: p.rebel_score * 20,
+                    fillColor: "red",
+                    fillOpacity: 0.2,
+                    weight: 0,
+                    interactive: false
+                }).addTo(map);
+            }
+        });
+
+        if (!base) return;
+
+        missions.forEach(m => {
+            const target = planetMap[m.planet_id];
+            if (!target || m.planet_id === "0") return;
+
+            const from = [base.y, base.x];
+            const to = [target.y, target.x];
+
+            let style = { color: '#888', weight: 2, opacity: 0.7 };
+            if (m.status === "active") {
+                style = { color: 'red', weight: 3, opacity: 0.9 };
+            } else if (m.status === "planned") {
+                style = { color: '#888', weight: 2, opacity: 0.7, dashArray: "6, 10" };
+            } else if (m.status === "completed") {
+                style = { color: '#4caf50', weight: 3, opacity: 0.9 };
+            } else if (m.status === "cancelled") {
+                style = { color: '#000', weight: 3, opacity: 0.7 };
+            } else if (m.status === "draft") {
+                style = { color: '#2196f3', weight: 3, opacity: 0.7 };
+            }
+            const line = L.polyline([from, to], style).addTo(map);
+            if (m.status === "active") {
+                animateLine(line, from, to);
+            }
+        });
+    });
+
+    function animateLine(line, from, to) {
+        const marker = L.circleMarker(from, {
+            radius: 5,
+            color: "red",
+            fillColor: "red",
+            fillOpacity: 1
+        }).addTo(map);
+
+        let progress = 0;
+        const speed = 0.003;
+
+        function step() {
+            const lat = from[0] + (to[0] - from[0]) * progress;
+            const lng = from[1] + (to[1] - from[1]) * progress;
+            marker.setLatLng([lat, lng]);
+
+            progress += speed;
+            if (progress >= 1) progress = 0;
+            requestAnimationFrame(step);
+        }
+        step();
+    }
+</script>
+
+{% endblock %}

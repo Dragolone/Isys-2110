@@ -1,0 +1,324 @@
+{% extends "base.html" %}
+{% block title %}Alerts{% endblock %}
+
+{% block content %}
+<style>
+.alert-section {
+  max-width: 1200px;
+  margin: 2.5rem auto 0 auto;
+  background: var(--bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+}
+.alert-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+.alert-subtitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  color: var(--text-primary);
+}
+.alert-form {
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+.alert-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.alert-form input, .alert-form select {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1.1rem;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 1em;
+  transition: border 0.2s;
+}
+.alert-form input:focus, .alert-form select:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+.alert-form-btn {
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.alert-form-btn:hover {
+  background: #005fa3;
+}
+.alert-filter {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  align-items: center;
+}
+.alert-filter select {
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 1em;
+  min-width: 150px;
+}
+.alert-filter label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.alert-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin-bottom: 0.5rem;
+}
+.alert-table th {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  font-weight: 600;
+  padding: 12px 8px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  font-size: 1.1em;
+  text-align: left;
+}
+.alert-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 12px 8px;
+  border: none;
+  vertical-align: middle;
+  font-size: 1.05em;
+}
+.alert-table tr {
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.alert-table tr:hover td {
+  background: var(--bg-tertiary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+.alert-action-btn {
+  padding: 6px 16px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1em;
+  font-weight: 500;
+  cursor: pointer;
+  margin: 0 4px;
+  transition: background 0.2s, color 0.2s;
+  text-decoration: none;
+  display: inline-block;
+}
+.alert-action-btn.resolve {
+  background: var(--success-color);
+  color: #fff;
+}
+.alert-action-btn.resolve:hover {
+  background: #218838;
+}
+.alert-action-btn.delete {
+  background: var(--error-color);
+  color: #fff;
+}
+.alert-action-btn.delete:hover {
+  background: #a71d2a;
+}
+.alert-level {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.alert-level.critical {
+  background: #dc3545;
+  color: #fff;
+}
+.alert-level.high {
+  background: #fd7e14;
+  color: #fff;
+}
+.alert-level.medium {
+  background: #ffc107;
+  color: #000;
+}
+.alert-level.low {
+  background: #28a745;
+  color: #fff;
+}
+.alert-status {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  font-weight: 500;
+}
+.alert-status.resolved {
+  background: #6c757d;
+  color: #fff;
+}
+.alert-status.unresolved {
+  background: #17a2b8;
+  color: #fff;
+}
+.resolve-all-btn {
+  background: var(--success-color);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 1.5rem;
+}
+.resolve-all-btn:hover {
+  background: #218838;
+}
+</style>
+
+<div class="alert-section">
+  <div class="alert-title">System Alerts</div>
+
+  <!-- Create Alert Modal Button -->
+  <button class="alert-form-btn" style="margin-bottom:1.5rem;" onclick="openAlertModal()">Create Alert</button>
+
+  <!-- Create Alert Modal -->
+  <div id="alertModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:9999;">
+    <div class="alert-form" style="max-width:420px; margin:6% auto; position:relative;">
+      <button type="button" onclick="closeAlertModal()" style="position:absolute; top:12px; right:18px; font-size:1.5rem; background:none; border:none; color:var(--text-secondary); cursor:pointer;">&times;</button>
+      <div class="alert-subtitle" style="margin-top:0;">Create Manual Alert</div>
+      <form action="{{ url_for('create_alert') }}" method="post" onsubmit="return closeAlertModalOnSubmit()">
+        <label for="type">Type:</label>
+        <select id="type" name="type" required>
+          <option value="RESOURCE">RESOURCE</option>
+          <option value="MAINTENANCE">MAINTENANCE</option>
+          <option value="SECURITY">SECURITY</option>
+          <option value="TECHNICAL">TECHNICAL</option>
+          <option value="INFRASTRUCTURE">INFRASTRUCTURE</option>
+        </select>
+        <label for="content">Content:</label>
+        <input type="text" id="content" name="content" required>
+        <label for="level">Level:</label>
+        <select id="level" name="level" required>
+          <option value="Critical">Critical</option>
+          <option value="High">High</option>
+          <option value="Medium">Medium</option>
+          <option value="Low">Low</option>
+        </select>
+        <label for="time">Time (optional):</label>
+        <input type="text" id="time" name="time" placeholder="YYYY-MM-DD HH:MM:SS">
+        <div style="display:flex; justify-content:flex-end; gap:1rem;">
+          <button type="submit" class="alert-form-btn">Create Alert</button>
+          <button type="button" class="alert-form-btn" style="background:var(--error-color);" onclick="closeAlertModal()">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Mark All as Resolved -->
+  <form action="{{ url_for('resolve_all_alerts') }}" method="post">
+    <button type="submit" class="resolve-all-btn">Mark All Resolved</button>
+  </form>
+
+  <!-- Filter Section -->
+  <div class="alert-filter">
+    <div>
+      <label for="levelFilter">Level:</label>
+      <select id="levelFilter" onchange="filterAlerts()">
+        <option value="All Levels">All Levels</option>
+        <option value="Critical">Critical</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+    </div>
+
+    <div>
+      <label for="statusFilter">Status:</label>
+      <select id="statusFilter" onchange="filterAlerts()">
+        <option value="All">All</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Unresolved">Unresolved</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Alerts Table -->
+  <table class="alert-table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Content</th>
+        <th>Level</th>
+        <th>Time</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for alert in alerts %}
+      <tr data-level="{{ alert.level }}" data-status="{{ alert.status }}">
+        <td>{{ alert.alert_type }}</td>
+        <td>{{ alert.content }}</td>
+        <td><span class="alert-level {{ alert.level.lower() }}">{{ alert.level }}</span></td>
+        <td>{{ alert.time }}</td>
+        <td><span class="alert-status {{ alert.status.lower() }}">{{ alert.status }}</span></td>
+        <td>
+          {% if alert.status == "Unresolved" %}
+          <a href="{{ url_for('resolve_alert', time=alert.time) }}" class="alert-action-btn resolve">Mark resolved</a>
+          {% endif %}
+          <a href="{{ url_for('delete_alert', time=alert.time) }}" class="alert-action-btn delete">Delete</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<script>
+function filterAlerts() {
+  const level = document.getElementById("levelFilter").value;
+  const status = document.getElementById("statusFilter").value;
+  const rows = document.querySelectorAll(".alert-table tbody tr");
+
+  rows.forEach(row => {
+    const rowLevel = row.getAttribute("data-level");
+    const rowStatus = row.getAttribute("data-status");
+
+    const levelMatch = (level === "All Levels" || level === rowLevel);
+    const statusMatch = (status === "All" || status === rowStatus);
+
+    row.style.display = (levelMatch && statusMatch) ? "" : "none";
+  });
+}
+
+function openAlertModal() {
+  document.getElementById("alertModal").style.display = "block";
+}
+function closeAlertModal() {
+  document.getElementById("alertModal").style.display = "none";
+}
+function closeAlertModalOnSubmit() {
+  setTimeout(closeAlertModal, 100); // Delay closing to ensure form submission
+  return true;
+}
+</script>
+{% endblock %}

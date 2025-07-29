@@ -1,0 +1,38 @@
+[
+  {
+    "planet_id": "0",
+    "name": "Imperial Base",
+    "x": 960,
+    "y": 540,
+    "rebel_score": 0,
+    "threat": "BASE",
+    "status": "default"
+  },
+  {
+    "planet_id": "2",
+    "name": "Big Mars",
+    "x": 1500,
+    "y": 750,
+    "rebel_score": 5,
+    "threat": "MEDIUM",
+    "status": "ACTIVE"
+  },
+  {
+    "planet_id": "3",
+    "name": "Small Moon",
+    "x": 400,
+    "y": 900,
+    "rebel_score": 3,
+    "threat": "LOW",
+    "status": "DORMANT"
+  },
+  {
+    "planet_id": "4",
+    "name": "Maga Sydney",
+    "x": 200,
+    "y": 600,
+    "rebel_score": 1,
+    "threat": "LOW",
+    "status": "DORMANT"
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "alert_type": "TECHNICAL",
+    "content": "Shield generator unit #4 is overheating intermittently.",
+    "level": "Medium",
+    "time": "2025-05-17 18:30:00",
+    "status": "Resolved"
+  },
+  {
+    "alert_type": "INFRASTRUCTURE",
+    "content": "Hydro-core coolant reserves at 20%, resupply required.",
+    "level": "Low",
+    "time": "2025-05-16 08:20:00",
+    "status": "Resolved"
+  }
+]

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Add New Mission{% endblock %}
+{% block content %}
+<style>
+.mission-form-container {
+  max-width: 480px;
+  margin: 3rem auto;
+  background: var(--bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.18);
+  padding: 2.5rem 2rem 2rem 2rem;
+  color: var(--text-primary);
+}
+.mission-form-container h2 {
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+.mission-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.mission-form input, .mission-form select, .mission-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 1.2rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 1em;
+  transition: border 0.2s;
+}
+.mission-form input:focus, .mission-form select:focus, .mission-form textarea:focus {
+  border-color: var(--accent-color);
+  outline: none;
+}
+.mission-form-btns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+}
+.mission-form-btn {
+  padding: 8px 22px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.mission-form-btn.save {
+  background: var(--success-color);
+  color: #fff;
+}
+.mission-form-btn.save:hover {
+  background: #218838;
+}
+.mission-form-btn.cancel {
+  background: var(--error-color);
+  color: #fff;
+}
+.mission-form-btn.cancel:hover {
+  background: #a71d2a;
+}
+</style>
+<div class="mission-form-container">
+  <h2>Add New Mission</h2>
+  <form class="mission-form" method="POST">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="description">Description:</label>
+    <textarea id="description" name="description" rows="2" required></textarea>
+
+    <label for="planet_id">Planet ID:</label>
+    <input type="number" id="planet_id" name="planet_id" min="1" required>
+
+    <label for="start_time">Start Time:</label>
+    <input type="datetime-local" id="start_time" name="start_time" required>
+
+    <label for="end_time">End Time:</label>
+    <input type="datetime-local" id="end_time" name="end_time" required>
+
+    <label for="energy">ENERGY Used:</label>
+    <input type="number" id="energy" name="energy" min="0" value="0">
+
+    <label for="droids">DROIDS Used:</label>
+    <input type="number" id="droids" name="droids" min="0" value="0">
+
+    <label for="facilities">FACILITIES Used:</label>
+    <input type="number" id="facilities" name="facilities" min="0" value="0">
+
+    <label for="status">Status:</label>
+    <select id="status" name="status" required>
+      <option value="draft">draft</option>
+      <option value="planned">planned</option>
+      <option value="cancelled">cancelled</option>
+      <option value="completed">completed</option>
+    </select>
+
+    <div class="mission-form-btns">
+      <button type="submit" class="mission-form-btn save">Save</button>
+      <a href="{{ url_for('view_missions') }}" class="mission-form-btn cancel">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

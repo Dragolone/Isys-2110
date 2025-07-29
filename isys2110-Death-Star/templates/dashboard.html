@@ -1,0 +1,607 @@
+{% extends "base.html" %}
+
+{% set status_map = {
+  'planned': 'todo',
+  'active': 'in-progress',
+  'completed': 'done',
+  'cancelled': 'cancelled',
+  'draft': 'todo'
+} %}
+
+{% set timeline_missions = [] %}
+{% for m in missions if m.start_time and m.end_time %}
+  {% set _ = timeline_missions.append({
+    'id': m.mission_id,
+    'name': m.name,
+    'status': status_map[m.status] if m.status in status_map else m.status,
+    'start': m.start_time,
+    'end': m.end_time,
+    'assignee': m.assignee if m.assignee is defined and m.assignee else None
+  }) %}
+{% endfor %}
+
+{% set kanban_missions = [] %}
+{% for m in missions %}
+  {% set _ = kanban_missions.append({
+    'id': m.mission_id,
+    'title': m.name,
+    'status': status_map[m.status] if m.status in status_map else m.status,
+    'priority': m.priority if m.priority is defined and m.priority else None,
+    'due': m.end_time,
+    'assignee': m.assignee if m.assignee is defined and m.assignee else None
+  }) %}
+{% endfor %}
+
+{% set resource_types = resources | map(attribute='type') | list %}
+{% set resource_avail = resources | map(attribute='available') | list %}
+
+{% set mission_chart_data = {
+    "labels": ["Active", "Planned", "Completed", "Cancelled"],
+    "datasets": [{
+        "data": [mission_data['active'], mission_data['planned'], mission_data['completed'], mission_data['cancelled']],
+        "backgroundColor": ["#2196f3", "#ff9800", "#4caf50", "#f44336"]
+    }]
+} %}
+
+{% block title %}Dashboard - Death Star Control Panel{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js">
+<style>
+    /* Dashboard Grid */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    /* Cards */
+    .card {
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        padding: var(--spacing-md);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .card-title {
+        font-size: var(--font-size-h3);
+        color: var(--text-primary);
+    }
+
+    /* Timeline */
+    .timeline-container {
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+        width: 100%;
+        max-width: 100vw;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+
+    .timeline-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .timeline-controls {
+        display: flex;
+        gap: var(--spacing-xs);
+    }
+
+    .timeline-controls button {
+        background: var(--bg-tertiary);
+        border: none;
+        color: var(--text-primary);
+        padding: 4px 8px;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .timeline-controls button.active {
+        background: var(--accent-color);
+    }
+
+    .timeline-wrapper {
+        position: relative;
+        min-height: 240px;
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+        overflow-x: auto;
+        overflow-y: hidden;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .timeline-scroll {
+        position: relative;
+        display: block;
+        min-width: 0 !important;
+        width: auto;
+        /* Width will be set dynamically by JS */
+    }
+
+    .timeline-tasks {
+        position: relative;
+        width: 100%;
+        overflow: visible;
+    }
+
+    .timeline-bar {
+        position: absolute;
+        height: 32px;
+        border-radius: 6px;
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+        color: #fff;
+        font-size: 0.95rem;
+        font-weight: 500;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+        transition: left 0.3s cubic-bezier(.4,0,.2,1), width 0.3s cubic-bezier(.4,0,.2,1), background 0.2s;
+        user-select: none;
+    }
+
+    .timeline-bar.planned { background: #2196f3; }
+    .timeline-bar.active { background: #8e24aa; color: #fff; }
+    .timeline-bar.completed { background: #4caf50; }
+    .timeline-bar.cancelled { background: #888; }
+    .timeline-bar.draft { background: #009688; }
+    .timeline-bar.critical { background: #f44336; }
+    .timeline-bar.high { background: #ff9800; color: #222; }
+    .timeline-bar.medium { background: #ffd600; color: #222; }
+    .timeline-bar.low { background: #43ea4a; color: #222; }
+    .timeline-bar.dragging { opacity: 0.7; z-index: 10; box-shadow: 0 4px 16px rgba(0,0,0,0.18); }
+
+    .timeline-tooltip {
+        position: absolute;
+        left: 50%;
+        top: 110%;
+        transform: translateX(-50%);
+        background: #222;
+        color: #fff;
+        padding: 8px 14px;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        white-space: nowrap;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 20;
+    }
+
+    .timeline-bar:hover .timeline-tooltip { opacity: 1; }
+
+    .timeline-bar .assignee-avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--accent-color);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+        margin-right: 6px;
+    }
+
+    .timeline-axis {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 24px;
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--border-color);
+    }
+
+    .timeline-date-label {
+        position: absolute;
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        transform: translateX(-50%);
+        white-space: nowrap;
+        text-align: center;
+        min-width: 48px;
+        padding: 2px 4px;
+    }
+
+    /* Kanban Board */
+    .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .kanban-column {
+        background: var(--bg-secondary);
+        border-radius: 8px;
+        padding: var(--spacing-md);
+    }
+
+    .column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-md);
+    }
+
+    .column-title {
+        font-size: var(--font-size-h3);
+        color: var(--text-primary);
+    }
+
+    .column-count {
+        background: var(--bg-tertiary);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.875rem;
+    }
+
+    .column-content {
+        min-height: 200px;
+    }
+
+    .kanban-card {
+        background: var(--bg-tertiary);
+        border-radius: 4px;
+        padding: var(--spacing-sm);
+        margin-bottom: var(--spacing-sm);
+        cursor: move;
+    }
+
+    .kanban-card.dragging {
+        opacity: 0.5;
+    }
+
+    .card-title {
+        font-weight: bold;
+        margin-bottom: 4px;
+    }
+
+    .card-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--text-secondary);
+    }
+
+    .drop-target {
+        height: 2px;
+        background: var(--accent-color);
+        margin: 4px 0;
+        display: none;
+    }
+
+    .drop-target.valid {
+        display: block;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+    <!-- Resource Status Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Resource Status</h3>
+        </div>
+        <div class="card-content">
+            <canvas id="resourceChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Mission Status Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Mission Status</h3>
+        </div>
+        <div class="card-content">
+            <canvas id="missionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Alert Status Card -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Alert Status</h3>
+        </div>
+        <div class="card-content">
+            <canvas id="alertChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Timeline Section -->
+<div class="timeline-container">
+    <div class="timeline-header">
+        <h2 class="timeline-title">Project Roadmap</h2>
+    </div>
+    <div class="timeline-wrapper">
+        <div class="timeline-scroll">
+            <div class="timeline-grid"></div>
+            <div class="timeline-today"></div>
+            <div class="timeline-tasks"></div>
+            <div class="timeline-axis" id="timelineAxis"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Kanban Board -->
+<div id="kanbanBoard"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const resourceLabels = {{ resource_types|tojson|safe }};
+const resourceData = {{ resource_avail|tojson|safe }};
+const allMissionsRaw = JSON.parse('{{ missions|tojson|safe }}');
+const allMissions = allMissionsRaw.map(m => ({
+    id: m.mission_id,
+    title: m.name,
+    status: m.status,
+    start: m.start_time,
+    end: m.end_time,
+    due: m.end_time,
+    priority: m.priority || '-',
+    assignee: m.assignee || '-'
+}));
+const timelineMissions = allMissions.filter(m => m.status === 'active' || m.status === 'planned');
+
+// Resource Chart - Display remaining energy levels
+const resourceCtx = document.getElementById('resourceChart').getContext('2d');
+const resourceChart = new Chart(resourceCtx, {
+    type: 'doughnut',
+    data: {
+        labels: resourceLabels,
+        datasets: [{
+            data: resourceData,
+            backgroundColor: ['#007ACC','#28a745','#ffc107']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } }
+    }
+});
+
+// Mission Chart
+const missionCtx = document.getElementById('missionChart').getContext('2d');
+const missionChart = new Chart(missionCtx, { type: 'bar', data: JSON.parse('{{ mission_chart_data|tojson|safe }}'), options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } } });
+
+// Alert Chart
+const alertCtx = document.getElementById('alertChart').getContext('2d');
+const alertChart = new Chart(alertCtx, {
+    type: 'line',
+    data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+            label: 'Alerts',
+            data: [2, 1, 3, 0, 4, 2, 1], // 模拟数据
+            borderColor: '#ffeb3b',
+            backgroundColor: 'rgba(255, 235, 59, 0.2)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+    }
+});
+
+function getKanbanColumns(missions) {
+    const now = new Date();
+    const todo = [];
+    const inProgress = [];
+    const done = [];
+    missions.forEach(m => {
+        if (m.status === 'completed' || m.status === 'done') {
+            done.push(m);
+        } else if (m.status === 'planned') {
+            if (m.due && new Date(m.due) > now) {
+                todo.push(m);
+            } else if (m.due && m.start && now >= new Date(m.start) && now <= new Date(m.due)) {
+                inProgress.push(m);
+            } else {
+                todo.push(m); // fallback
+            }
+        } else if (m.status === 'active') {
+            if (m.due && m.start && now >= new Date(m.start) && now <= new Date(m.due)) {
+                inProgress.push(m);
+            } else if (m.start && new Date(m.start) > now) {
+                todo.push(m);
+            } else {
+                inProgress.push(m); // fallback
+            }
+        }
+    });
+    return { todo, inProgress, done };
+}
+
+function renderKanban() {
+    const board = document.getElementById('kanbanBoard');
+    board.innerHTML = '';
+    const columns = [
+        { key: 'todo', title: 'To Do' },
+        { key: 'inProgress', title: 'In Progress' },
+        { key: 'done', title: 'Done' }
+    ];
+    const { todo, inProgress, done } = getKanbanColumns(allMissions);
+    const colMissions = { todo, inProgress, done };
+    const boardDiv = document.createElement('div');
+    boardDiv.className = 'kanban-board';
+    columns.forEach(col => {
+        const colDiv = document.createElement('div');
+        colDiv.className = 'kanban-column';
+        colDiv.innerHTML = `
+            <div class="column-header">
+                <h3 class="column-title">${col.title}</h3>
+                <span class="column-count">${colMissions[col.key].length}</span>
+            </div>
+            <div class="column-content"></div>
+        `;
+        const contentDiv = colDiv.querySelector('.column-content');
+        colMissions[col.key].forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'kanban-card';
+            card.innerHTML = `
+                <div class="card-title">${m.title}</div>
+                <div class="card-meta">
+                    <span>${col.key === 'done' ? 'Completed: ' : 'Due: '}${m.due ? formatDate(m.due) : '-'}</span>
+                </div>
+            `;
+            contentDiv.appendChild(card);
+        });
+        boardDiv.appendChild(colDiv);
+    });
+    board.appendChild(boardDiv);
+}
+
+let timelineZoom = 'week';
+let timelineStart = timelineMissions.length > 0
+    ? new Date(Math.min(...timelineMissions.map(m => new Date(m.start).getTime())))
+    : new Date();
+
+function renderTimeline() {
+  const grid = document.querySelector('.timeline-grid');
+  const tasksContainer = document.querySelector('.timeline-tasks');
+  const todayMarker = document.querySelector('.timeline-today');
+  const axis = document.getElementById('timelineAxis');
+  const timelineScroll = document.querySelector('.timeline-scroll');
+  const timelineWrapper = document.querySelector('.timeline-wrapper');
+  grid.innerHTML = '';
+  tasksContainer.innerHTML = '';
+  axis.innerHTML = '';
+
+  // Calculate earliest start and latest end of all tasks
+  let minDate = null, maxDate = null;
+  if (timelineMissions.length > 0) {
+    minDate = new Date(Math.min(...timelineMissions.map(m => new Date(m.start))));
+    maxDate = new Date(Math.max(...timelineMissions.map(m => new Date(m.end))));
+  } else {
+    minDate = new Date();
+    maxDate = new Date();
+  }
+  // Add 1 day buffer to avoid clipping boundary tasks
+  minDate.setDate(minDate.getDate() - 1);
+  maxDate.setDate(maxDate.getDate() + 1);
+  const days = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24)) + 1;
+  timelineScroll.style.width = (days * 80) + 'px';
+
+  // Render grid lines and dates
+  for (let i = 0; i < days; i++) {
+    const line = document.createElement('div');
+    line.className = 'timeline-grid-line';
+    line.style.left = `${(i / days) * 100}%`;
+    grid.appendChild(line);
+
+    const dateLabel = document.createElement('div');
+    dateLabel.className = 'timeline-date-label';
+    const date = new Date(minDate);
+    date.setDate(minDate.getDate() + i);
+    dateLabel.textContent = formatDate(date.toISOString().slice(0,10));
+    dateLabel.style.left = `${(i / days) * 100}%`;
+    dateLabel.style.bottom = '4px';
+    axis.appendChild(dateLabel);
+  }
+
+  // Render today's marker
+  const today = new Date();
+  if (today >= minDate && today <= maxDate) {
+    const dayIdx = Math.floor((today - minDate) / (1000 * 60 * 60 * 24));
+    todayMarker.style.display = 'block';
+    todayMarker.style.position = 'absolute';
+    todayMarker.style.left = `${(dayIdx / days) * 100}%`;
+    todayMarker.style.top = 0;
+    todayMarker.style.bottom = 0;
+    todayMarker.style.width = '2px';
+    todayMarker.style.background = 'var(--accent-color)';
+    todayMarker.style.zIndex = 5;
+  } else {
+    todayMarker.style.display = 'none';
+  }
+
+  // Render task bars
+  let visibleIdx = 0;
+  timelineMissions.forEach((mission) => {
+    const taskStart = new Date(mission.start);
+    const taskEnd = new Date(mission.end);
+    // Render if task is partially within current range
+    if (taskEnd < minDate || taskStart > maxDate) return;
+    const totalDays = days;
+    const offset = Math.max(0, Math.floor((taskStart - minDate) / (1000 * 60 * 60 * 24)));
+    const duration = Math.max(1, Math.floor((Math.min(taskEnd, maxDate) - Math.max(taskStart, minDate)) / (1000 * 60 * 60 * 24)) + 1);
+    const left = (offset / totalDays) * 100;
+    const width = (duration / totalDays) * 100;
+    const bar = document.createElement('div');
+    // 更丰富的颜色逻辑
+    let barClass = '';
+    if (mission.status === 'planned' || mission.status === 'todo') barClass = 'planned';
+    else if (mission.status === 'active' || mission.status === 'in-progress') barClass = 'active';
+    else if (mission.status === 'completed' || mission.status === 'done') barClass = 'completed';
+    else if (mission.status === 'cancelled') barClass = 'cancelled';
+    else if (mission.status === 'draft') barClass = 'draft';
+    else if (mission.status === 'critical') barClass = 'critical';
+    else if (mission.status === 'high') barClass = 'high';
+    else if (mission.status === 'medium') barClass = 'medium';
+    else if (mission.status === 'low') barClass = 'low';
+    bar.className = 'timeline-bar ' + barClass;
+    bar.style.left = `${left}%`;
+    bar.style.width = `${width}%`;
+    bar.style.top = `${visibleIdx * 40 + 10}px`;
+    bar.innerHTML = `
+      <span>${mission.title}</span>
+      <div class="timeline-tooltip">
+        <div><strong>${mission.id}</strong></div>
+        <div><span class="assignee-avatar">${mission.assignee}</span> ${mission.assignee}</div>
+        <div>${formatDate(mission.start)} - ${formatDate(mission.end)}</div>
+      </div>
+    `;
+    tasksContainer.appendChild(bar);
+    visibleIdx++;
+  });
+  // Height auto-adjust: 40px+10px interval
+  const newHeight = (visibleIdx * 40 + 40);
+  tasksContainer.style.height = newHeight + 'px';
+  timelineScroll.style.height = newHeight + 'px';
+  timelineWrapper.style.height = (newHeight + 40) + 'px';
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+document.querySelectorAll('.timeline-controls button').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.timeline-controls button').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    timelineZoom = this.dataset.zoom;
+    renderTimeline();
+  });
+});
+document.addEventListener('DOMContentLoaded', renderTimeline);
+
+document.addEventListener('DOMContentLoaded', function() {
+    renderTimeline();
+    renderKanban();
+});
+</script>
+{% endblock %} 

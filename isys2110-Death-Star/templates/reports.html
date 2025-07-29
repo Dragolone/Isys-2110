@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+
+{% block content %}
+<style>
+.report-section {
+  max-width: 1100px;
+  margin: 2.5rem auto 0 auto;
+  background: var(--bg-secondary);
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.13);
+  padding: 2.2rem 2.2rem 1.5rem 2.2rem;
+}
+.report-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: var(--text-primary);
+  letter-spacing: 1px;
+}
+.report-subtitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem 0;
+  color: var(--text-primary);
+}
+.report-export-form {
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  padding: 1.2rem 1.5rem 1.2rem 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.report-export-form label {
+  color: var(--text-primary);
+  font-weight: 500;
+  margin-right: 1rem;
+}
+.report-export-btn {
+  background: var(--accent-color);
+  color: #fff;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 8px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.report-export-btn:hover {
+  background: #005fa3;
+}
+.report-filter {
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.report-filter label {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+.report-filter select {
+  padding: 8px 12px;
+  border-radius: 7px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-size: 1em;
+  min-width: 140px;
+}
+.report-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 8px;
+  margin-bottom: 2.2rem;
+}
+.report-table th {
+  background: var(--bg-tertiary);
+  color: var(--accent-color);
+  font-weight: 600;
+  padding: 12px 8px;
+  border-radius: 8px 8px 0 0;
+  border: none;
+  font-size: 1.1em;
+}
+.report-table td {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  padding: 10px 8px;
+  border-radius: 0 0 8px 8px;
+  border: none;
+  vertical-align: middle;
+  font-size: 1.05em;
+  text-align: center;
+}
+.report-table tr {
+  transition: box-shadow 0.2s, background 0.2s;
+}
+.report-table tr:hover td {
+  background: var(--bg-tertiary);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+}
+</style>
+<div class="report-section">
+  <div class="report-title">System Reports</div>
+
+  <!-- Export Section -->
+  <form class="report-export-form" action="{{ url_for('export_report_csv') }}" method="post" onsubmit="return validateExport();">
+    <label><input type="checkbox" name="export_resource" checked> Resource Usage</label>
+    <label><input type="checkbox" name="export_mission" checked> Mission Summary</label>
+    <button type="submit" class="report-export-btn">Export CSV</button>
+  </form>
+  <script>
+    function validateExport() {
+        const res = document.querySelector('input[name="export_resource"]').checked;
+        const mis = document.querySelector('input[name="export_mission"]').checked;
+        if (!res && !mis) {
+            alert("Please select at least one section to export.");
+            return false;
+        }
+        return true;
+    }
+  </script>
+
+  <!-- Mission Section -->
+  <div class="report-subtitle">Missions</div>
+  <div class="report-filter">
+    <label for="statusFilter">Filter by status:</label>
+    <select id="statusFilter" onchange="filterMissions()">
+      <option value="All">All</option>
+      <option value="draft">Draft</option>
+      <option value="planned">Planned</option>
+      <option value="active">Active</option>
+      <option value="completed">Completed</option>
+      <option value="cancelled">Cancelled</option>
+    </select>
+  </div>
+  <table id="missionTable" class="report-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Start Time</th>
+        <th>End Time</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in missions %}
+      <tr data-status="{{ m.status }}">
+        <td>{{ m.mission_id }}</td>
+        <td>{{ m.name }}</td>
+        <td>{{ m.description }}</td>
+        <td>{{ m.status }}</td>
+        <td>{{ m.start_time }}</td>
+        <td>{{ m.end_time }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <script>
+    function filterMissions() {
+        const filter = document.getElementById("statusFilter").value;
+        const rows = document.querySelectorAll("#missionTable tbody tr");
+        rows.forEach(row => {
+            row.style.display = (filter === "All" || row.dataset.status === filter) ? "" : "none";
+        });
+    }
+  </script>
+
+  <!-- Resource Overview -->
+  <div class="report-subtitle">Current Resource Overview</div>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Available</th>
+        <th>Threshold</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in resources %}
+      <tr>
+        <td>{{ r.resource_type }}</td>
+        <td>{{ r.available }}</td>
+        <td>{{ r.threshold }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Past Resource Usage -->
+  <div class="report-subtitle">Past Resource Usage</div>
+  <table class="report-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>ENERGY</th>
+        <th>DROIDS</th>
+        <th>FACILITIES</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for log in resource_logs %}
+      <tr>
+        <td>{{ log.date }}</td>
+        <td>{{ log.ENERGY or 0 }}</td>
+        <td>{{ log.DROIDS or 0 }}</td>
+        <td>{{ log.FACILITIES or 0 }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

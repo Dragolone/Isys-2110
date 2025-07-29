@@ -1,0 +1,28 @@
+[
+  {
+    "date": "2025-05-01",
+    "ENERGY": 1200,
+    "DROIDS": 400,
+    "FACILITIES": 200
+  },
+  {
+    "date": "2025-05-02",
+    "ENERGY": 800,
+    "DROIDS": 300,
+    "FACILITIES": 150
+  },
+  {
+    "date": "2025-05-21",
+    "ENERGY": 0,
+    "DROIDS": 200,
+    "FACILITIES": 0
+  },
+  {
+    "date": "2025-05-23",
+    "ENERGY": 260
+  },
+  {
+    "date": "2025-05-24",
+    "ENERGY": 270
+  }
+]

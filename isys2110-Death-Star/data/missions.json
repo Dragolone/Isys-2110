@@ -1,0 +1,272 @@
+[
+  {
+    "mission_id": "1",
+    "name": "Draft Mission 1",
+    "description": "Initial planning phase",
+    "planet_id": "1",
+    "start_time": "",
+    "end_time": "",
+    "resources_used": {
+      "ENERGY": 0
+    },
+    "status": "draft"
+  },
+  {
+    "mission_id": "2",
+    "name": "Draft Mission 2",
+    "description": "Initial planning phase",
+    "planet_id": "1",
+    "start_time": "",
+    "end_time": "",
+    "resources_used": {
+      "ENERGY": 0
+    },
+    "status": "draft"
+  },
+  {
+    "mission_id": "3",
+    "name": "Draft Mission 3",
+    "description": "Initial planning phase",
+    "planet_id": "1",
+    "start_time": "",
+    "end_time": "",
+    "resources_used": {
+      "ENERGY": 0
+    },
+    "status": "draft"
+  },
+  {
+    "mission_id": "4",
+    "name": "Draft Mission 4",
+    "description": "Initial planning phase",
+    "planet_id": "1",
+    "start_time": "",
+    "end_time": "",
+    "resources_used": {
+      "ENERGY": 0
+    },
+    "status": "draft"
+  },
+  {
+    "mission_id": "5",
+    "name": "Draft Mission 5",
+    "description": "Initial planning phase",
+    "planet_id": "1",
+    "start_time": "",
+    "end_time": "",
+    "resources_used": {
+      "ENERGY": 0
+    },
+    "status": "draft"
+  },
+  {
+    "mission_id": "6",
+    "name": "Planned Mission 6",
+    "description": "Scheduled mission",
+    "planet_id": "2",
+    "start_time": "2025-05-09 03:41",
+    "end_time": "2025-05-25 02:40",
+    "resources_used": {
+      "ENERGY": 260,
+      "DROIDS": 0,
+      "FACILITIES": 0
+    },
+    "status": "active"
+  },
+  {
+    "mission_id": "7",
+    "name": "Planned Mission 7",
+    "description": "Scheduled mission",
+    "planet_id": "2",
+    "start_time": "2025-05-24 02:40",
+    "end_time": "2025-05-26 02:40",
+    "resources_used": {
+      "ENERGY": 270
+    },
+    "status": "active"
+  },
+  {
+    "mission_id": "8",
+    "name": "Planned Mission 8",
+    "description": "Scheduled mission",
+    "planet_id": "2",
+    "start_time": "2025-05-25 02:40",
+    "end_time": "2025-05-27 02:40",
+    "resources_used": {
+      "ENERGY": 280
+    },
+    "status": "planned"
+  },
+  {
+    "mission_id": "9",
+    "name": "Planned Mission 9",
+    "description": "Scheduled mission",
+    "planet_id": "2",
+    "start_time": "2025-05-26 02:40",
+    "end_time": "2025-05-28 02:40",
+    "resources_used": {
+      "ENERGY": 290
+    },
+    "status": "planned"
+  },
+  {
+    "mission_id": "10",
+    "name": "Planned Mission 10",
+    "description": "Scheduled mission",
+    "planet_id": "2",
+    "start_time": "2025-05-27 02:40",
+    "end_time": "2025-05-29 02:40",
+    "resources_used": {
+      "ENERGY": 300
+    },
+    "status": "planned"
+  },
+  {
+    "mission_id": "11",
+    "name": "Active Fast Mission 11",
+    "description": "Running now, ending in 2 minutes",
+    "planet_id": "3",
+    "start_time": "2025-05-22 01:40",
+    "end_time": "2025-05-22 02:42",
+    "resources_used": {
+      "DROIDS": 100
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "12",
+    "name": "Active Mission 12",
+    "description": "Running now",
+    "planet_id": "3",
+    "start_time": "2025-05-22 01:40",
+    "end_time": "2025-05-22 03:40",
+    "resources_used": {
+      "DROIDS": 100
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "13",
+    "name": "Active Mission 13",
+    "description": "Running now",
+    "planet_id": "3",
+    "start_time": "2025-05-22 01:40",
+    "end_time": "2025-05-22 03:40",
+    "resources_used": {
+      "DROIDS": 100
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "14",
+    "name": "Completed Mission 14",
+    "description": "Finished",
+    "planet_id": "2",
+    "start_time": "2025-05-21 02:40",
+    "end_time": "2025-05-21 06:40",
+    "resources_used": {
+      "FACILITIES": 1
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "15",
+    "name": "Completed Mission 15",
+    "description": "Finished",
+    "planet_id": "2",
+    "start_time": "2025-05-20 02:40",
+    "end_time": "2025-05-20 06:40",
+    "resources_used": {
+      "FACILITIES": 1
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "16",
+    "name": "Completed Mission 16",
+    "description": "Finished",
+    "planet_id": "2",
+    "start_time": "2025-05-19 02:40",
+    "end_time": "2025-05-19 06:40",
+    "resources_used": {
+      "FACILITIES": 1
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "17",
+    "name": "Completed Mission 17",
+    "description": "Finished",
+    "planet_id": "2",
+    "start_time": "2025-05-18 02:40",
+    "end_time": "2025-05-18 06:40",
+    "resources_used": {
+      "FACILITIES": 1
+    },
+    "status": "completed"
+  },
+  {
+    "mission_id": "18",
+    "name": "Cancelled Mission 18",
+    "description": "Aborted",
+    "planet_id": "3",
+    "start_time": "2025-05-23 02:40",
+    "end_time": "2025-05-25 02:40",
+    "resources_used": {
+      "ENERGY": 300
+    },
+    "status": "cancelled"
+  },
+  {
+    "mission_id": "19",
+    "name": "Cancelled Mission 19",
+    "description": "Aborted",
+    "planet_id": "3",
+    "start_time": "2025-05-23 02:40",
+    "end_time": "2025-05-25 02:40",
+    "resources_used": {
+      "ENERGY": 300
+    },
+    "status": "cancelled"
+  },
+  {
+    "mission_id": "20",
+    "name": "Cancelled Mission 20",
+    "description": "Aborted",
+    "planet_id": "3",
+    "start_time": "2025-05-23 02:40",
+    "end_time": "2025-05-25 02:40",
+    "resources_used": {
+      "ENERGY": 300
+    },
+    "status": "cancelled"
+  },
+  {
+    "mission_id": "21",
+    "name": "hello",
+    "description": "12",
+    "planet_id": "1",
+    "start_time": "2025-05-17 22:25",
+    "end_time": "2025-05-31 22:25",
+    "resources_used": {
+      "ENERGY": 12,
+      "DROIDS": 1,
+      "FACILITIES": 1
+    },
+    "status": "active"
+  },
+  {
+    "mission_id": "22",
+    "name": "test",
+    "description": "1",
+    "planet_id": "1",
+    "start_time": "2025-05-10 00:00",
+    "end_time": "2025-05-31 00:00",
+    "resources_used": {
+      "ENERGY": 1,
+      "DROIDS": 1,
+      "FACILITIES": 1
+    },
+    "status": "active"
+  }
+]
